@@ -210,6 +210,39 @@ fn decode_rsa2048_pss_pub_der() {
 }
 
 #[test]
+fn pss_key_roundtrip_without_digest_oid() {
+    use rsa::signature::Keypair;
+    use sha3::Keccak256;
+
+    type SigningKey = pss::SigningKey<Keccak256>;
+    type VerifyingKey = pss::VerifyingKey<Keccak256>;
+
+    let signing = SigningKey::new(PrivateKey::from_pkcs8_pem(RSA_2048_PRIV_PEM).unwrap());
+    let verifying = signing.verifying_key();
+    let pkcs8 = signing.to_pkcs8_der().unwrap();
+    let spki = verifying.to_public_key_der().unwrap();
+    assert_eq!(
+        SigningKey::from_pkcs8_der(pkcs8.as_bytes()).unwrap(),
+        signing
+    );
+    assert_eq!(
+        VerifyingKey::from_public_key_der(spki.as_bytes()).unwrap(),
+        verifying
+    );
+
+    #[cfg(feature = "serde")]
+    {
+        let json = serde_json::to_string(&signing).unwrap();
+        assert_eq!(serde_json::from_str::<SigningKey>(&json).unwrap(), signing);
+        let json = serde_json::to_string(&verifying).unwrap();
+        assert_eq!(
+            serde_json::from_str::<VerifyingKey>(&json).unwrap(),
+            verifying
+        );
+    }
+}
+
+#[test]
 #[cfg(feature = "pkcs1v15")]
 fn encode_rsa2048_priv_der() {
     let key = PrivateKey::from_pkcs8_der(RSA_2048_PRIV_DER).unwrap();

@@ -7,7 +7,6 @@ use signature::{DigestVerifier, Verifier, hazmat::PrehashVerifier};
 #[cfg(feature = "encoding")]
 use {
     crate::encoding::ID_RSASSA_PSS,
-    const_oid::AssociatedOid,
     pkcs8::{Document, EncodePublicKey},
     spki::{AlgorithmIdentifierRef, AssociatedAlgorithmIdentifier, der::AnyRef},
 };
@@ -188,7 +187,7 @@ where
 #[cfg(feature = "encoding")]
 impl<D> TryFrom<pkcs8::SubjectPublicKeyInfoRef<'_>> for VerifyingKey<D>
 where
-    D: Digest + AssociatedOid,
+    D: Digest,
 {
     type Error = spki::Error;
 
@@ -232,7 +231,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, D> Deserialize<'de> for VerifyingKey<D>
 where
-    D: Digest + AssociatedOid,
+    D: Digest,
 {
     fn deserialize<De>(deserializer: De) -> Result<Self, De::Error>
     where

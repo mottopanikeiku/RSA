@@ -36,6 +36,8 @@ use {
 /// [RFC8017 § 8.1].
 ///
 /// Signing uses the supplied RNG for both the salt and RSA base blinding.
+/// Importing an RSA key does not require `D` to have an OID; constructing a
+/// signature algorithm identifier does.
 ///
 /// [RFC8017 § 8.1]: https://datatracker.ietf.org/doc/html/rfc8017#section-8.1
 #[derive(Debug, Clone)]
@@ -292,7 +294,7 @@ where
 #[cfg(feature = "encoding")]
 impl<D> TryFrom<pkcs8::PrivateKeyInfoRef<'_>> for SigningKey<D>
 where
-    D: Digest + AssociatedOid,
+    D: Digest,
 {
     type Error = pkcs8::Error;
 
@@ -329,7 +331,7 @@ where
 #[cfg(feature = "serde")]
 impl<'de, D> Deserialize<'de> for SigningKey<D>
 where
-    D: Digest + AssociatedOid,
+    D: Digest,
 {
     fn deserialize<De>(deserializer: De) -> core::result::Result<Self, De::Error>
     where
